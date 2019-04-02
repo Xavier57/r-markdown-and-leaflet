@@ -1,0 +1,76 @@
+---
+title: "data products week 2 assigment"
+author: "Xavier Chapelant"
+date: "1 avril 2019"
+output: html_document
+---
+### Instructions
+Create a web page using R Markdown that features a map created with Leaflet. 
+Host your webpage on either GitHub Pages, RPubs, or NeoCities.
+Your webpage must contain the date that you created the document, and it must contain a map created with Leaflet. We would love to see you show off your creativity! 
+###Review criteria
+The rubric contains the following two questions:
+Does the web page feature a date and is this date less than two months before the date that you're grading this assignment?
+Does the web page feature an interactive map that appears to have been created with Leaflet?
+
+### Installation
+
+```r
+install.packages("leaflet")
+```
+### Infos about the graphics
+The page features 100 restaurants in Paris, which are classified from the price of their menus. Clicking on the icon of the restaurant, let the exact price to be displayed...
+```{r, echo=FALSE, message=FALSE}
+library(leaflet)
+set.seed(2019-04-01)
+df <- data.frame(lat = runif(100, min = 48.80, max = 48.90),
+                 lng = runif(100, min = 2.30, max = 2.40),
+                 price = paste("",round(runif(100, min=10, max=200),digits = 0),""),
+                 stringsAsFactors = FALSE)
+head(df)
+df$category<-round(as.integer(df$price)/50)
+getColor <- function(df) {
+  sapply(df$category, function(category) {
+  if(category == 0) {
+    "green"
+  } else if(category == 1) {
+    "yellow"
+  } else if(category == 2) {
+    "orange"
+  } else if(category == 3) {
+    "red"
+  } else {
+    "black"
+  } })
+}
+getLabel <- function(df) {
+  sapply(df$category, function(category) {
+  if(category == 0) {
+    "very cheap"
+  } else if(category == 1) {
+    "cheap"
+  } else if(category == 2) {
+    "fair"
+  } else if(category == 3) {
+    "expensive"
+  } else {
+    "very expensive"
+  } })
+}
+factpal <- colorFactor(topo.colors(5), df$category)
+icons <- awesomeIcons(
+  icon = 'ios-close',
+  iconColor = 'black',
+  library = 'ion',
+  markerColor = getColor(df)
+)
+
+qpal <- colorFactor(c("yellow","red","orange","green","black"), getLabel(df), n = 5)
+df %>%
+  leaflet() %>%
+  addTiles() %>%
+   addLegend("topright",pal=qpal,values=getLabel(df), opacity = 1, )   %>%
+ addAwesomeMarkers(~df$lng, ~df$lat, icon=icons, 
+                   label=~paste(df$price,'euros'), clusterOptions = markerClusterOptions()) 
+```
+
